@@ -1,11 +1,14 @@
 import socket
 import threading
 import tkinter as tk
+import requests
+import datetime
+import win32api
 
-HEADER = 64
-DISCONNECT_MESSAGE = "!DISCONNECT"
+
+#Declaring variables
 FORMAT = 'utf-8'
-PORT = 5050
+PORT = 5051
 SERVER = socket.gethostbyname(socket.gethostname())
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,11 +20,12 @@ client_sockets = []
 offline_players = "3"
 
 Allowed_IPs = [socket.gethostbyname(socket.gethostname())]
+# print(Allowed_IPs)
 
 def add_IPs():
     allowed = Allowed_IP_entry.get()
     Allowed_IPs.append(allowed)
-    print(Allowed_IPs)
+    # print(Allowed_IPs)
 
 def send_message_to_all_clients(message):
     for client in client_sockets:
@@ -48,7 +52,7 @@ def handle_client(connection, address):
     if "Gamer 2" in gamers.values():
         gamer2_label.config(text = "Gamer 2: Online")
     
-    print(gamers)
+    # print(gamers)
 
     clients[address] = connection
     
@@ -99,7 +103,42 @@ def start():
             thread = threading.Thread(target = handle_client, args = (connection, address))
             thread.start()
         print(f"[ACTIVE CONNECTIONS] {len(clients)}")
-        
+
+def uuid_generator():
+
+    drive_letter = 'C:'
+
+    drive_info = win32api.GetVolumeInformation(drive_letter + '\\')
+    # print(drive_info[1])
+    return drive_info[1]
+
+
+def post_request():
+    URL = 'https://vip.vr360action.com/machines/getServerTime'
+
+    data = {"uuid": f'{uuid_generator()}'}
+
+    response = requests.post(URL, json = data)
+
+    server_time = response.json()
+    server_time = server_time['serverTime'][0:10] +' ' + server_time['serverTime'][11:len(server_time['serverTime']) - 5]
+
+    date_format = "%Y-%m-%d %H:%M:%S"
+    date_time_obj = datetime.datetime.strptime(server_time, date_format)
+
+    current_time = datetime.datetime.now()
+    time_difference = date_time_obj - current_time
+    return time_difference
+
+def configuration_file():
+    file_path = "hostIP.txt"
+    file = open(file_path, "w")
+
+    file.write(f"Host IP Address: {socket.gethostbyname(socket.gethostname())}")
+
+    file.close()
+
+configuration_file()
 
 root = tk.Tk()
 root.title("Server UI")
@@ -108,27 +147,35 @@ window_width = 400
 window_height = 400
 root.geometry(f"{window_width}x{window_height}")
 
-#Add allowed IP addresses
-Allowed_IP_label = tk.Label(root, text="Enter Gamer PC Allowed IPs")
-Allowed_IP_label.pack()
+server_label = tk.Label(root, text="Server up and running")
+server_label.pack()
+
+ip_label = tk.Label(root, text=f"Available at: {SERVER}")
+ip_label.pack()
+
+Allowed_IP_label = tk.Label(root, text="Add Gamer PC Allowed IPs")
+Allowed_IP_label.pack(padx=10, pady=10)
 
 Allowed_IP_entry = tk.Entry(root)
-Allowed_IP_entry.pack()
+Allowed_IP_entry.pack(padx=10, pady=10)
 
 Allowed_IP_button = tk.Button(root, text="Add", command=add_IPs)
-Allowed_IP_button.pack()
+Allowed_IP_button.pack(padx=10, pady=10)
 
-gamer1_label = tk.Label(root, text="Games 1: Offline")
-gamer1_label.pack()
+gamer1_label = tk.Label(root, text="Gamer 1: Offline")
+gamer1_label.pack(padx=10, pady=10)
 
 gamer2_label = tk.Label(root, text="Gamer 2: Offline")
-gamer2_label.pack()
+gamer2_label.pack(padx=10, pady=10)
 
 start_button = tk.Button(root, text="Start Game", command=send_Start)
-start_button.pack()
+start_button.pack(padx=10, pady=10)
 
 pause_button = tk.Button(root, text="Pause Game", command=send_Pause)
-pause_button.pack()
+pause_button.pack(padx=10, pady=10)
+
+time_label = tk.Label(root, text=f"Time Difference With The Server: {post_request()}")
+time_label.pack(padx=10, pady=10)
 
 listen_thread = threading.Thread(target=start)
 listen_thread.start()
