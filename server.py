@@ -9,24 +9,27 @@ import win32api
 #Declaring variables
 FORMAT = 'utf-8'
 PORT = 5051
-SERVER = socket.gethostbyname(socket.gethostname())
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((SERVER, PORT))
 
 clients = {}
 gamers = {}
 client_sockets = []
-offline_players = "3"
+offline_players = "" 
 
+#Initializing the server
+SERVER = socket.gethostbyname(socket.gethostname())
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((SERVER, PORT))
+
+#Maintaining a list of allowed gamer IPs
 Allowed_IPs = [socket.gethostbyname(socket.gethostname())]
-# print(Allowed_IPs)
 
+#Add IPs to the list of allowed IPv4 addresses
 def add_IPs():
     allowed = Allowed_IP_entry.get()
     Allowed_IPs.append(allowed)
-    # print(Allowed_IPs)
 
+#Function to send start/stop game messages to clients
 def send_message_to_all_clients(message):
     for client in client_sockets:
         try:
@@ -34,7 +37,7 @@ def send_message_to_all_clients(message):
         except:
             client_sockets.remove(client)
 
-
+#This function handles how the client show react to the server
 def handle_client(connection, address):
 
     global offline_players
@@ -52,7 +55,6 @@ def handle_client(connection, address):
     if "Gamer 2" in gamers.values():
         gamer2_label.config(text = "Gamer 2: Online")
     
-    # print(gamers)
 
     clients[address] = connection
     
@@ -85,13 +87,15 @@ def handle_client(connection, address):
 
     print(f"[DISCONNECTED] {address} disconnected")
 
-    
+
+#Functions to define messages for client
 def send_Start():
     send_message_to_all_clients("Game has started")
 
 def send_Pause():
     send_message_to_all_clients("Game is paused")
 
+#Main driver function of the server
 def start():
     server.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
@@ -104,6 +108,8 @@ def start():
             thread.start()
         print(f"[ACTIVE CONNECTIONS] {len(clients)}")
 
+
+#This function generates the unique ID of the C drive of User
 def uuid_generator():
 
     drive_letter = 'C:'
@@ -112,7 +118,7 @@ def uuid_generator():
     # print(drive_info[1])
     return drive_info[1]
 
-
+#This function Posts the UUID to a URL and finds difference in time of the URL server and our local time
 def post_request():
     URL = 'https://vip.vr360action.com/machines/getServerTime'
 
@@ -130,6 +136,7 @@ def post_request():
     time_difference = date_time_obj - current_time
     return time_difference
 
+#This function creates a configuration file for the IP address
 def configuration_file():
     file_path = "hostIP.txt"
     file = open(file_path, "w")
@@ -140,6 +147,7 @@ def configuration_file():
 
 configuration_file()
 
+#Main UI using tkinter
 root = tk.Tk()
 root.title("Server UI")
 
@@ -180,4 +188,5 @@ time_label.pack(padx=10, pady=10)
 listen_thread = threading.Thread(target=start)
 listen_thread.start()
 
+# Start the main event loop
 root.mainloop()

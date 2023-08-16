@@ -4,6 +4,7 @@ import subprocess
 import time
 import socket
 
+#This function creates a configuration file for the IP address
 def configuration_file():
     file_path = "GamerIP.txt"
     file = open(file_path, "w")
@@ -12,17 +13,17 @@ def configuration_file():
 
     file.close()
 
-HEADER = 64
-FORMAT = 'utf-8'
+#Initiasing the clients connection
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 PORT = 5051
+FORMAT = 'utf-8'
 
+#Function to retun the server address
 def server_address():
     SERVER = host_entry.get()
     return SERVER
 
-
+#This function tries to connect to the server
 def check_connection():
     host = host_entry.get()
     result_label.config(text="Currently Disconnecting. Trying..")
@@ -33,11 +34,13 @@ def check_connection():
     threading.Thread(target=ping_host, args=(host,)).start()
     threading.Thread(target=print_messages).start()
 
+#This function writes messages as sent by the server
 def print_messages():
     
     while True:
         game_label.config(text=client.recv(2048).decode(FORMAT))
 
+#This function pings the host every few seconds to check the connection health
 def ping_host(host):
 
     
@@ -56,7 +59,7 @@ def ping_host(host):
 
 configuration_file()
 
-# Create the main window
+#Main UI using tkinter
 root = tk.Tk()
 root.title("Client UI")
 
@@ -64,7 +67,6 @@ window_width = 400
 window_height = 400
 root.geometry(f"{window_width}x{window_height}")
 
-# Create and pack widgets
 host_label = tk.Label(root, text="Enter host IP")
 host_label.pack(padx=10, pady=10)
 
