@@ -5,9 +5,11 @@ This is my repository to create simple client server using python and added seve
 
 # Instructions
 
-1. Simply run the server file to start the server. It will show the UI at which it is running.
-2. Run the client file to connect to the server using server IP.
-3. Send instructions from client and back.
+1. Have python installed if required.
+2. Ensure all the firewalls are turned off.
+3. Simply run the server file to start the server. It will show the UI at which it is running.
+4. Run the client file to connect to the server using server IP.
+5. Send instructions from client and back.
 
 Bunch of other features are also added. Explore them as you run them.
 
